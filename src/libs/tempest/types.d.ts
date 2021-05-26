@@ -75,3 +75,166 @@ export type TempestStationObservation = {
 	elevation: number;
 	obs: TempestObservationValues[];
 };
+
+export type TempestEventAck = {
+	type: 'ack';
+	id: number;
+};
+
+export type TempestEventRainStart = {
+	type: 'evt_precip';
+	device_id: string;
+};
+
+export type TempestEventLightningStrike = {
+	type: 'evt_strike';
+	device_id: string;
+	evt: [time: number, distance: number, energy: number];
+};
+
+export type TempestEventDeviceOnline = {
+	type: 'evt_online';
+	device_id: string;
+};
+
+export type TempestEventDeviceOffline = {
+	type: 'evt_offline';
+	device_id: string;
+};
+
+export type TempestEventRapidWind = {
+	type: 'rapid_wind';
+	device_id: string;
+	ob: [time: number, speed: number, direction: number];
+};
+
+export type TempestEventRapidWindParsed = TempestEventRapidWind & {
+	parsed: {
+		time: number;
+		wind_avg: number;
+		wind_direction: number;
+	};
+};
+
+export type TempestEventObservationAir = {
+	type: 'obs_air';
+	device_id: string;
+	obs: [
+		time: number,
+		pressure: number,
+		temperature: number,
+		humidity: number,
+		strike_count: number,
+		strike_distance: number,
+		battery: number,
+		interval: number
+	][];
+};
+
+export type TempestEventObservationSky = {
+	type: 'obs_air';
+	device_id: string;
+	obs: [
+		time: number,
+		illuminance: number,
+		uv: number,
+		rain: number,
+		wind_lull: number,
+		wind_avg: number,
+		wind_gust: number,
+		battery: number,
+		interval: number,
+		solar_radiation: number,
+		rain_daily: number,
+		precipitation_type: number,
+		wind_interval: number,
+		rain_final: number,
+		rain_daily_final: number,
+		precipitation_analysis_type: number
+	][];
+};
+
+export type TempestEventObservationTempest = {
+	type: 'obs_st';
+	device_id: string;
+	obs: [
+		time: number,
+		wind_lull: number,
+		wind_avg: number,
+		wind_gust: number,
+		wind_direction: number,
+		wind_interval: number,
+		pressure: number,
+		temperature: number,
+		humidity: number,
+		illuminance: number,
+		uv: number,
+		solar_radiation: number,
+		rain: number,
+		precipitation_type: number,
+		strike_distance: number,
+		strike_count: number,
+		battery: number,
+		interval: number,
+		rain_daily: number,
+		rain_final: number,
+		rain_daily_final: number,
+		precipitation_analysis_type: number
+	][];
+};
+
+export type TempestEventObservationTempestParsed =
+	TempestEventObservationTempest & {
+		parsed: {
+			time: number;
+			wind_lull: number;
+			wind_avg: number;
+			wind_gust: number;
+			wind_direction: number;
+			wind_interval: number;
+			barometric_pressure: number;
+			air_temperature: number;
+			relative_humidity: number;
+			illuminance: number;
+			uv: number;
+			solar_radiation: number;
+			precip: number;
+			precipitation_type: number;
+			strike_distance: number;
+			strike_count: number;
+			battery: number;
+			interval: number;
+			rain_daily: number;
+			rain_final: number;
+			rain_daily_final: number;
+			precipitation_analysis_type: number;
+		};
+	};
+
+export type TempestEventStationOnline = {
+	type: 'evt_station_online';
+	station_id: string;
+};
+
+export type TempestEventStationOffline = {
+	type: 'evt_station_offline';
+	station_id: string;
+};
+
+export type TempestDeviceEvent =
+	| TempestEventRainStart
+	| TempestEventLightningStrike
+	| TempestEventRapidWind
+	| TempestEventObservationAir
+	| TempestEventObservationSky
+	| TempestEventObservationTempest
+	| TempestEventDeviceOnline
+	| TempestEventDeviceOffline;
+
+export type TempestDeviceEventParsed =
+	| TempestEventObservationTempestParsed
+	| TempestEventRapidWindParsed;
+
+export type TempestSocketEvent = TempestDeviceEvent;
+
+export type TempestDeviceListener = (evt: TempestDeviceEventParsed) => any;

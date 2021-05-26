@@ -1,8 +1,16 @@
 import { SmartThingsData, updateSmartThings } from './libs/smartthings';
-import { TempestObservationValues } from './libs/tempest';
+import {
+	TempestDeviceEventParsed,
+	TempestObservationValues,
+} from './libs/tempest';
 import TempestAPI from './libs/tempest/tempest';
 
-const requiredEnvVars = ['TEMPEST_TOKEN', 'TEMPEST_STATION_ID', 'ST_URL'];
+const requiredEnvVars = [
+	'TEMPEST_TOKEN',
+	'TEMPEST_DEVICE_ID',
+	'TEMPEST_STATION_ID',
+	'ST_URL',
+];
 
 for (const ev of requiredEnvVars) {
 	if (typeof process.env[ev] === 'undefined') {
@@ -12,40 +20,59 @@ for (const ev of requiredEnvVars) {
 
 const tempest = new TempestAPI(process.env.TEMPEST_TOKEN as string);
 const tempestStationId = process.env.TEMPEST_STATION_ID as string;
+const tempestDeviceId = process.env.TEMPEST_DEVICE_ID as string;
 
 const stUrl = process.env.ST_URL as string;
+
+let currentData: SmartThingsData;
 
 function cToF(temp: number) {
 	return temp * 1.8 + 32;
 }
 
-function observationToST(obs: TempestObservationValues): SmartThingsData {
-	return {
-		humidity: obs.relative_humidity,
-		indoortempf: obs.air_temperature_indoor,
-		indoorhumidity: obs.relative_humidity_indoor,
-		tempf: cToF(obs.air_temperature),
-		winddir: obs.wind_direction,
-		windspeedmph: obs.wind_avg,
-		windgustmph: obs.wind_gust,
-		solarradiation: obs.solar_radiation,
-		UV: obs.uv,
-		rainin: obs.precip,
-		baromin: obs.barometric_pressure,
-	};
+function observationToST(
+	obs: Partial<TempestObservationValues>
+): SmartThingsData {
+	const data = { ...currentData };
+
+	if (obs.relative_humidity) data.humidity = obs.relative_humidity;
+	if (obs.air_temperature) data.tempf = cToF(obs.air_temperature);
+	if (obs.wind_direction) data.winddir = obs.wind_direction;
+	if (obs.wind_avg) data.windspeedmph = obs.wind_avg;
+	if (obs.wind_gust) data.windgustmph = obs.wind_gust;
+	if (obs.solar_radiation) data.solarradiation = obs.solar_radiation;
+	if (obs.uv) data.UV = obs.uv;
+	if (obs.precip) data.rainin = obs.precip;
+	if (obs.barometric_pressure) data.baromin = obs.barometric_pressure;
+
+	return data;
 }
 
 async function run() {
-	const observation = await tempest.getStationObservation(tempestStationId);
+	try {
+		const observation = await tempest.getStationObservation(tempestStationId);
+		currentData = observationToST(observation.obs[0]);
+		await updateSmartThings(currentData, stUrl);
 
-	if (!observation) {
-		throw new Error('Problem fetching observation');
-		process.exit(1);
-		return;
+		function deviceEventHandler(event: TempestDeviceEventParsed) {
+			currentData = observationToST(event.parsed);
+			updateSmartThings(currentData, stUrl);
+		}
+
+		tempest.addDeviceListener(tempestDeviceId, deviceEventHandler);
+	} catch (e) {
+		tempest.shutdown();
+		console.error(e);
 	}
-
-	const stData = observationToST(observation.obs[0]);
-	await updateSmartThings(stData, stUrl);
 }
+
+function shutdown() {
+	console.log('Shutting down gracefully');
+	tempest.shutdown();
+	process.exit();
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGHUP', shutdown);
 
 run();
