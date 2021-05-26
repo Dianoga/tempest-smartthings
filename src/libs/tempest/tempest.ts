@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import Debug from 'debug';
+import WebSocket, { MessageEvent } from 'ws';
 
 import {
 	TempestDeviceEventParsed,
@@ -7,7 +8,6 @@ import {
 	TempestSocketEvent,
 	TempestStationObservation,
 } from './types';
-import WebSocket, { MessageEvent } from 'ws';
 
 const debug = Debug('tempest');
 

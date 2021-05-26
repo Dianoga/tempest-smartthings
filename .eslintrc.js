@@ -14,6 +14,8 @@ module.exports = {
 		sourceType: 'module',
 	},
 	rules: {
+		'simple-import-sort/imports': 'error',
+		'simple-import-sort/exports': 'error',
 		'func-names': 0,
 		'class-methods-use-this': 0,
 		'@typescript-eslint/no-explicit-any': 'off',
