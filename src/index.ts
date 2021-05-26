@@ -30,6 +30,10 @@ function cToF(temp: number) {
 	return temp * 1.8 + 32;
 }
 
+function mpsToMPH(speed: number) {
+	return speed * 2.236936;
+}
+
 function observationToST(
 	obs: Partial<TempestObservationValues>
 ): SmartThingsData {
@@ -38,8 +42,14 @@ function observationToST(
 	if (obs.relative_humidity) data.humidity = obs.relative_humidity;
 	if (obs.air_temperature) data.tempf = cToF(obs.air_temperature);
 	if (obs.wind_direction) data.winddir = obs.wind_direction;
-	if (obs.wind_avg) data.windspeedmph = obs.wind_avg;
-	if (obs.wind_gust) data.windgustmph = obs.wind_gust;
+
+	if (obs.wind_avg) {
+		if (mpsToMPH(obs.wind_avg) < data.windgustmph)
+			data.windspeedmph = mpsToMPH(obs.wind_avg);
+		else data.windgustmph = mpsToMPH(obs.wind_avg);
+	}
+
+	if (obs.wind_gust) data.windgustmph = mpsToMPH(obs.wind_gust);
 	if (obs.solar_radiation) data.solarradiation = obs.solar_radiation;
 	if (obs.uv) data.UV = obs.uv;
 	if (obs.precip) data.rainin = obs.precip;
