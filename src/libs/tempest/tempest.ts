@@ -11,15 +11,6 @@ import WebSocket, { MessageEvent } from 'ws';
 
 const debug = Debug('tempest');
 
-const deviceEventTypes = [
-	'obs_air',
-	'obs_sky',
-	'obs_st',
-	'evt_strike',
-	'evt_precip',
-	'rapid_wind',
-];
-
 const rapidWindKeys = ['time', 'wind_avg', 'wind_direction'];
 
 const obsStKeys = [
