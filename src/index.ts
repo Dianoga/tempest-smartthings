@@ -1,22 +1,16 @@
-import { updateSmartThings } from './libs/smartthings';
+import { SmartThingsData, updateSmartThings } from './libs/smartthings';
 import { TempestObservationValues } from './libs/tempest';
 import TempestAPI from './libs/tempest/tempest';
 
-const requiredEnvVars = [
-	'TEMPEST_TOKEN',
-	'TEMPEST_STATION_ID',
-	'TEMPEST_DEVICE_ID',
-	'ST_URL',
-];
+const requiredEnvVars = ['TEMPEST_TOKEN', 'TEMPEST_STATION_ID', 'ST_URL'];
 
-for (let ev of requiredEnvVars) {
+for (const ev of requiredEnvVars) {
 	if (typeof process.env[ev] === 'undefined') {
 		throw new Error(`Missing environement variable: ${ev}`);
 	}
 }
 
 const tempest = new TempestAPI(process.env.TEMPEST_TOKEN as string);
-const tempestDeviceId = process.env.TEMPEST_DEVICE_ID as string;
 const tempestStationId = process.env.TEMPEST_STATION_ID as string;
 
 const stUrl = process.env.ST_URL as string;
@@ -25,7 +19,7 @@ function cToF(temp: number) {
 	return temp * 1.8 + 32;
 }
 
-function observationToST(obs: TempestObservationValues) {
+function observationToST(obs: TempestObservationValues): SmartThingsData {
 	return {
 		humidity: obs.relative_humidity,
 		indoortempf: obs.air_temperature_indoor,
