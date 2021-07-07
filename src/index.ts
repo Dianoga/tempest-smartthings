@@ -61,6 +61,14 @@ function observationToST(
 async function run() {
 	try {
 		const observation = await tempest.getStationObservation(tempestStationId);
+
+		// If no observation, something is weird. Try again later
+		if (observation.obs.length === 0) {
+			console.warn('No observation: trying again later');
+			setTimeout(run, 60 * 1000);
+			return;
+		}
+
 		currentData = observationToST(observation.obs[0]);
 		await updateSmartThings(currentData, stUrl);
 
